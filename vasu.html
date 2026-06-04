@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VASUDHA | Guardian Step Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-green: #00ff88;
+            --glow-red: #ff3333;
+            --glow-blue: #00d4ff;
+            --glow-yellow: #ffcc00;
+            --glow-purple: #cc00ff;
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #020202;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Sci-Fi Background */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border-glass) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-glass) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: top;
+            animation: moveGrid 15s linear infinite;
+        }
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 1000px; }
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar - Team & Status */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            color: var(--glow-blue);
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--glow-blue);
+        }
+
+        .status-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--glow-green);
+        }
+
+        .team-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 20px;
+        }
+
+        .member {
+            font-size: 12px;
+            color: #aaa;
+            display: block;
+            margin: 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Viewport */
+        .viewport {
+            flex: 1;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map-canvas {
+            flex: 1;
+            width: 100%;
+            background: #000;
+        }
+
+        /* Disaster Overlays */
+        .overlay {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            pointer-events: none; display: none; z-index: 10;
+        }
+        #fire-ov { background: radial-gradient(circle, rgba(255,50,0,0.3) 0%, transparent 80%); }
+        #flood-ov { background: rgba(0, 100, 255, 0.3); bottom: 0; height: 0%; transition: 2s; display: block; }
+        #gas-ov { background: rgba(0, 255, 100, 0.15); }
+        #storm-ov { background: rgba(150, 150, 150, 0.4); backdrop-filter: blur(1px); }
+
+        .controls {
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-reset { background: #333; color: white; border: 1px solid #555; }
+        .btn-random { 
+            background: linear-gradient(45deg, #ff3333, #ff8800); 
+            color: white; 
+            box-shadow: 0 0 20px rgba(255,51,51,0.4); 
+        }
+
+        .log {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-family: monospace;
+            color: var(--glow-green);
+            text-align: right;
+            font-size: 11px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Earthquake Shake Effect */
+        .shake { animation: shake 0.15s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-2px, -1px); }
+            100% { transform: translate(1px, 0px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">VASUDHA</div>
+        <div class="status-card">
+            <small style="color: #888;">CURRENT STATUS</small>
+            <div id="stat-text" style="color: var(--glow-green); font-weight: bold;">SYSTEM SECURE</div>
+        </div>
+        <div class="status-card" style="border-left-color: var(--glow-blue)">
+            <small style="color: #888;">THREAT LEVEL</small>
+            <div id="threat-text">0% - NORMAL</div>
+        </div>
+
+        <div class="team-section">
+            <small style="color: var(--glow-blue); font-weight: bold;">COMMAND TEAM</small>
+            <span class="member">NIHIRA</span>
+            <span class="member">BARKAT</span>
+            <span class="member">TIARA</span>
+            <span class="member">RISHIKA</span>
+            <span class="member">TUSHIKA</span>
+        </div>
+    </div>
+
+    <!-- Main View -->
+    <div class="viewport" id="vp">
+        <div class="overlay" id="fire-ov"></div>
+        <div class="overlay" id="flood-ov"></div>
+        <div class="overlay" id="gas-ov"></div>
+        <div class="overlay" id="storm-ov"></div>
+
+        <div class="log" id="sys-log">
+            SENSORS... ONLINE<br>
+            NETWORK... ENCRYPTED<br>
+            LOCATION... SECTOR 7
+        </div>
+
+        <svg id="map-canvas" viewBox="0 0 600 400">
+            <!-- Map Boundaries -->
+            <rect x="50" y="50" width="500" height="300" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+            <!-- Rooms -->
+            <path d="M100 100 H250 V180 H100 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+            <path d="M350 100 H500 V180 H350 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+            <path d="M100 250 H500 V320 H100 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+
+            <!-- Route (Hidden by default) -->
+            <path id="route" d="M150 150 L300 150 L300 350 L550 350" fill="none" stroke="var(--glow-green)" stroke-width="4" stroke-dasharray="10" style="display:none;">
+                <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+            </path>
+            <!-- Hazard Marker -->
+            <circle id="hazard-pt" cx="425" cy="140" r="0" fill="rgba(255,0,0,0.6)">
+                <animate attributeName="r" values="0;40;0" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+            <!-- User Pulse -->
+            <circle cx="150" cy="150" r="6" fill="var(--glow-blue)">
+                <animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite" />
+            </circle>
+        </svg>
+
+        <div class="controls">
+            <button class="btn btn-reset" onclick="resetSys()">Reset System</button>
+            <button class="btn btn-random" onclick="randomDisaster()">⚠️ Randomize Hazard</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const disasters = [
+        { 
+            name: "FIRE", color: "#ff3333", 
+            msg: "Sector 3 Ignite. Evacuate via West exit.", 
+            voice: "Warning. Fire detected. Please evacuate to the nearest exit immediately.", 
+            action: () => { document.getElementById('fire-ov').style.display = 'block'; document.getElementById('hazard-pt').setAttribute('r', '45'); }
+        },
+        { 
+            name: "EARTHQUAKE", color: "#ffcc00", 
+            msg: "Seismic Surge. Take cover under beams.", 
+            voice: "Earthquake detected. Drop, cover, and hold on.", 
+            action: () => { document.getElementById('vp').classList.add('shake'); }
+        },
+        { 
+            name: "FLOOD", color: "#00d4ff", 
+            msg: "Water Level Critical. Move to Level 4.", 
+            voice: "Flood warning. Move to higher ground immediately.", 
+            action: () => { document.getElementById('flood-ov').style.height = '100%'; }
+        },
+        { 
+            name: "GAS LEAK", color: "#cc00ff", 
+            msg: "Toxic Leak. Use breathing apparatus.", 
+            voice: "Gas leak detected. Seal all air vents and evacuate the area.", 
+            action: () => { document.getElementById('gas-ov').style.display = 'block'; }
+        },
+        { 
+            name: "TSUNAMI", color: "#0055ff", 
+            msg: "Sea Level Rise. Move inland 2km.", 
+            voice: "Tsunami alert. High wave impact expected. Move inland immediately.", 
+            action: () => { document.getElementById('flood-ov').style.height = '70%'; document.getElementById('vp').classList.add('shake'); }
+        },
+        { 
+            name: "CYCLONE", color: "#ffffff", 
+            msg: "Extreme Winds. Seal all exterior gates.", 
+            voice: "Cyclone warning. Stay away from windows and seek interior shelter.", 
+            action: () => { document.getElementById('storm-ov').style.display = 'block'; document.getElementById('vp').classList.add('shake'); }
+        }
+    ];
+
+    function resetSys() {
+        document.getElementById('vp').classList.remove('shake');
+        document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+        document.getElementById('flood-ov').style.height = '0%';
+        document.getElementById('route').style.display = 'none';
+        document.getElementById('hazard-pt').setAttribute('r', '0');
+        document.getElementById('stat-text').innerText = "SYSTEM SECURE";
+        document.getElementById('stat-text').style.color = "var(--glow-green)";
+        document.getElementById('threat-text').innerText = "0% - NORMAL";
+        document.getElementById('sys-log').innerHTML = "SENSORS... ONLINE<br>NETWORK... ENCRYPTED<br>LOCATION... SECTOR 7";
+    }
+
+    function randomDisaster() {
+        resetSys();
+        const d = disasters[Math.floor(Math.random() * disasters.length)];
+        document.getElementById('stat-text').innerText = "⚠️ " + d.name + " ALERT";
+        document.getElementById('stat-text').style.color = d.color;
+        document.getElementById('threat-text').innerText = "98% - CRITICAL";
+        document.getElementById('route').style.display = 'block';
+        document.getElementById('sys-log').innerHTML = "HAZARD: " + d.name + "<br>STATUS: EVACUATING<br>ADVICE: " + d.msg;
+        
+        d.action();
+        
+        const speech = new SpeechSynthesisUtterance(d.voice);
+        window.speechSynthesis.speak(speech);
+    }
+</script>
+
+</body>
+</html>
