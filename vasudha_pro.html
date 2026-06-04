@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VASUDHA | Guardian Step Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-green: #00ff88;
+            --glow-red: #ff3333;
+            --glow-blue: #00d4ff;
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Animated Background Grid */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border-glass) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-glass) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: top;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 1000px; }
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Left Panel - AI Status */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--glow-blue);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .status-item {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--glow-green);
+            transition: 0.3s;
+        }
+
+        /* Center - Map Simulation */
+        .main-view {
+            flex: 1;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #map-canvas {
+            flex: 1;
+            width: 100%;
+            background: radial-gradient(circle, #111 0%, #000 100%);
+        }
+
+        /* Emergency Overlay */
+        .emergency-active {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 0, 0.2);
+            pointer-events: none;
+            display: none;
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Control Panel Bottom */
+        .controls {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-ai { background: var(--glow-blue); color: #000; box-shadow: 0 0 15px var(--glow-blue); }
+        .btn-danger { background: var(--glow-red); color: #fff; box-shadow: 0 0 15px var(--glow-red); }
+
+        /* Scanning Text Overlay */
+        .ai-log {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: var(--glow-green);
+            text-align: right;
+        }
+
+        /* Right Dashboard */
+        .stats-panel {
+            width: 250px;
+            background: var(--bg-glass);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .safety-gauge {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid var(--glow-green);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--glow-green);
+            box-shadow: inset 0 0 20px var(--glow-green);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">VASUDHA</div>
+        <div class="status-item">
+            <small>FIRE SENSORS</small>
+            <div id="fire-status">ACTIVE / SECURE</div>
+        </div>
+        <div class="status-item">
+            <small>SEISMIC ACTIVITY</small>
+            <div>0.02 Magnitude</div>
+        </div>
+        <div class="status-item">
+            <small>GAS LEAK DETECTOR</small>
+            <div style="color: var(--glow-green)">0.0% Concentration</div>
+        </div>
+        <div class="status-item" style="margin-top: auto; border-left-color: var(--glow-blue)">
+            <small>AI GUARDIAN</small>
+            <div>System v4.2 Online</div>
+        </div>
+    </div>
+
+    <!-- Main Map View -->
+    <div class="main-view">
+        <div class="emergency-active" id="emergency-overlay"></div>
+        <div class="ai-log" id="ai-log">
+            SYSTEM SCANNING... OK<br>
+            THERMAL SIGNATURES... CLEAR<br>
+            CROWD DENSITY... LOW
+        </div>
+        
+        <svg id="map-canvas" viewBox="0 0 600 400">
+            <!-- Simplified Smart Building Map -->
+            <path d="M50 50 L550 50 L550 350 L50 350 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+            <rect x="100" y="100" width="150" height="80" fill="rgba(255,255,255,0.05)" stroke="#444" />
+            <rect x="350" y="100" width="150" height="80" fill="rgba(255,255,255,0.05)" stroke="#444" />
+            <rect x="100" y="250" width="400" height="50" fill="rgba(255,255,255,0.05)" stroke="#444" />
+            
+            <!-- Safe Route (Hidden by default) -->
+            <path id="safe-route" d="M150 150 L300 150 L300 350 L550 350" 
+                  fill="none" stroke="var(--glow-green)" stroke-width="5" 
+                  stroke-dasharray="10" style="display:none;">
+                <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+            </path>
+
+            <!-- User -->
+            <circle cx="150" cy="150" r="8" fill="var(--glow-blue)">
+                <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite" />
+            </circle>
+
+            <!-- Hazard (Hidden) -->
+            <circle id="hazard" cx="425" cy="140" r="30" fill="rgba(255,0,0,0.5)" style="display:none;"/>
+        </svg>
+
+        <div class="controls">
+            <button class="btn btn-ai" onclick="runScan()">Analyze Environment</button>
+            <button class="btn btn-danger" onclick="startEmergency()">Simulate Fire Alert</button>
+        </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="stats-panel">
+        <h4 style="text-align: center; color: var(--glow-blue); font-family: 'Orbitron';">SAFETY INDEX</h4>
+        <div class="safety-gauge" id="score">98%</div>
+        <div style="font-size: 12px; color: #888; text-align: center;">
+            <p>Nearby Exits: 4</p>
+            <p>Elevators: DISABLED</p>
+            <p>Rescue Time: 2m 40s</p>
+        </div>
+        <button class="btn btn-sos" style="background: white; color: black; width: 100%; margin-top: 20px;" onclick="alert('SOS Signal Sent to First Responders!')">ONE-TAP SOS</button>
+    </div>
+</div>
+
+<script>
+    function runScan() {
+        const log = document.getElementById('ai-log');
+        log.innerHTML = "ANALYZING STRUCTURE...<br>DETECTING PERSONS... 42 FOUND<br>STRUCTURAL INTEGRITY... 100%";
+        setTimeout(() => {
+            alert("AI Analysis Complete: Environment is currently safe.");
+        }, 1000);
+    }
+
+    function startEmergency() {
+        // Sound & Visuals
+        document.getElementById('emergency-overlay').style.display = 'block';
+        document.getElementById('safe-route').style.display = 'block';
+        document.getElementById('hazard').style.display = 'block';
+        
+        // Update Stats
+        document.getElementById('fire-status').innerText = '🔥 DANGER DETECTED';
+        document.getElementById('fire-status').style.color = 'var(--glow-red)';
+        document.getElementById('score').innerText = '12%';
+        document.getElementById('score').style.color = 'var(--glow-red)';
+        document.getElementById('score').style.borderColor = 'var(--glow-red)';
+        document.getElementById('score').style.boxShadow = 'inset 0 0 20px var(--glow-red)';
+
+        // AI Logic
+        const log = document.getElementById('ai-log');
+        log.style.color = 'var(--glow-red)';
+        log.innerHTML = "CRITICAL ALERT!<br>FIRE DETECTED IN SECTOR 4<br>CALCULATING SAFEST ROUTE...<br>ROUTE FOUND: EXIT NORTH-EAST";
+
+        // Voice
+        const speech = new SpeechSynthesisUtterance("Warning. Fire detected in sector 4. Please follow the green illuminated path to the north-east exit.");
+        window.speechSynthesis.speak(speech);
+    }
+</script>
+
+</body>
+</html>
