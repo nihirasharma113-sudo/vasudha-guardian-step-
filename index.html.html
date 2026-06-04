@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VASUDHA | Guardian Step Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glow-green: #00ff88;
+            --glow-red: #ff3333;
+            --glow-blue: #00d4ff;
+            --glow-yellow: #ffcc00;
+            --glow-purple: #cc00ff;
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #020202;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Sci-Fi Background */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border-glass) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-glass) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: top;
+            animation: moveGrid 15s linear infinite;
+        }
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 1000px; }
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: var(--glow-blue);
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--glow-blue);
+        }
+
+        .status-card {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--glow-green);
+        }
+
+        .team-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 15px;
+        }
+
+        .member {
+            font-size: 11px;
+            color: #aaa;
+            display: block;
+            margin: 3px 0;
+            text-transform: uppercase;
+        }
+
+        /* Main Viewport */
+        .viewport {
+            flex: 1;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map-canvas {
+            flex: 1;
+            width: 100%;
+            background: #000;
+        }
+
+        /* Disaster Overlays */
+        .overlay {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            pointer-events: none; display: none; z-index: 10;
+        }
+        #fire-ov { background: radial-gradient(circle, rgba(255,50,0,0.3) 0%, transparent 80%); }
+        #flood-ov { background: rgba(0, 100, 255, 0.3); bottom: 0; height: 0%; transition: 2s; display: block; }
+        #gas-ov { background: rgba(0, 255, 100, 0.15); }
+
+        .controls {
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-size: 11px;
+        }
+        .btn-reset { background: #333; color: white; border: 1px solid #555; }
+        .btn-random { background: linear-gradient(45deg, #ff8800, #ff3333); color: white; box-shadow: 0 0 15px rgba(255,51,51,0.3); }
+        .btn-sos { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
+
+        .log {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-family: monospace;
+            color: var(--glow-green);
+            text-align: right;
+            font-size: 11px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Right Panel: Instructions */
+        .instructions-panel {
+            width: 220px;
+            background: var(--bg-glass);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .step-item {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        /* Earthquake Shake */
+        .shake { animation: shake 0.15s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-2px, -1px); }
+            100% { transform: translate(1px, 0px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">VASUDHA</div>
+        <div class="status-card">
+            <small style="color: #888;">SYSTEM STATUS</small>
+            <div id="stat-text" style="color: var(--glow-green); font-weight: bold;">ALL SECURE</div>
+        </div>
+        <div class="status-card" style="border-left-color: var(--glow-blue)">
+            <small style="color: #888;">LIVE LOCATION</small>
+            <div id="loc-text">SECTOR-7 (IDLE)</div>
+        </div>
+
+        <div class="team-section">
+            <small style="color: var(--glow-blue); font-weight: bold;">COMMAND CENTER</small>
+            <span class="member">NIHIRA</span>
+            <span class="member">BARKAT</span>
+            <span class="member">TIARA</span>
+            <span class="member">RISHIKA</span>
+            <span class="member">TUSHIKA</span>
+        </div>
+    </div>
+
+    <!-- Main View -->
+    <div class="viewport" id="vp">
+        <div class="overlay" id="fire-ov"></div>
+        <div class="overlay" id="flood-ov"></div>
+        <div class="overlay" id="gas-ov"></div>
+
+        <div class="log" id="sys-log">
+            SENSORS: ACTIVE<br>
+            TRACKING: NOMINAL
+        </div>
+
+        <svg id="map-canvas" viewBox="0 0 600 400">
+            <!-- Building Plan -->
+            <rect x="50" y="50" width="500" height="300" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+            <path d="M100 100 H250 V180 H100 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+            <path d="M350 100 H500 V180 H350 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+            <path d="M100 250 H500 V320 H100 Z" fill="rgba(255,255,255,0.03)" stroke="#444"/>
+            
+            <!-- Safe Route -->
+            <path id="route" d="M150 150 L300 150 L300 350 L550 350" fill="none" stroke="var(--glow-green)" stroke-width="4" stroke-dasharray="10" style="display:none;">
+                <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite" />
+            </path>
+
+            <!-- Hazard Marker -->
+            <circle id="hazard-pt" cx="0" cy="0" r="0" fill="rgba(255,0,0,0.6)">
+                <animate id="hazard-anim" attributeName="r" values="0;40;0" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+
+            <!-- User -->
+            <circle cx="150" cy="150" r="6" fill="var(--glow-blue)">
+                <animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/>
+            </circle>
+        </svg>
+
+        <div class="controls">
+            <button class="btn btn-reset" onclick="resetSys()">Reset</button>
+            <button class="btn btn-random" onclick="randomizeAll()">⚠️ Randomize All</button>
+            <button class="btn btn-sos" onclick="triggerSOS()">ONE-TAP SOS</button>
+        </div>
+    </div>
+
+    <!-- Instructions Panel -->
+    <div class="instructions-panel">
+        <h4 style="color: var(--glow-blue); font-family: 'Orbitron'; font-size: 14px; margin-top: 0;">PROCEDURES</h4>
+        <div id="instruction-list">
+            <div class="step-item">1. System in Monitoring mode.</div>
+            <div class="step-item">2. Use 'Randomize' to simulate.</div>
+            <div class="step-item">3. SOS for emergency alert.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const locations = [
+        { name: "Basement Lab", x: 180, y: 140 },
+        { name: "East Wing Office", x: 420, y: 140 },
+        { name: "Main Parking", x: 300, y: 280 },
+        { name: "Sector-4 Lobby", x: 500, y: 300 },
+        { name: "Server Room", x: 120, y: 280 }
+    ];
+
+    const disasters = [
+        { 
+            name: "FIRE", color: "#ff3333", 
+            advice: "Stay low to avoid smoke. Use stairs, not elevators.",
+            steps: ["• Do not use elevators", "• Stay low to avoid smoke", "• Touch doors for heat", "• Head to West Exit"]
+        },
+        { 
+            name: "EARTHQUAKE", color: "#ffcc00", 
+            advice: "Drop, Cover, and Hold on. Stay away from windows.",
+            steps: ["• Get under sturdy table", "• Protect your head", "• Stay away from glass", "• Wait for shaking to stop"]
+        },
+        { 
+            name: "FLOOD", color: "#00d4ff", 
+            advice: "Move to upper floors immediately. Avoid basements.",
+            steps: ["• Get to higher ground", "• Avoid electrical panels", "• Do not walk through water", "• Save fresh water"]
+        },
+        { 
+            name: "GAS LEAK", color: "#cc00ff", 
+            advice: "Evacuate immediately. Do not create sparks or use phones.",
+            steps: ["• Cover nose and mouth", "• No open flames", "• Evacuate to fresh air", "• Open windows if possible"]
+        },
+        { 
+            name: "TSUNAMI", color: "#0055ff", 
+            advice: "Move inland or to high ground immediately.",
+            steps: ["• Head 2km inland", "• Avoid coastlines", "• Follow sirens", "• Stay on high ground"]
+        },
+        { 
+            name: "CYCLONE", color: "#ffffff", 
+            advice: "Stay indoors in a windowless room.",
+            steps: ["• Seal all windows", "• Stay in central room", "• Prepare emergency kit", "• Avoid exterior walls"]
+        }
+    ];
+
+    function resetSys() {
+        document.getElementById('vp').classList.remove('shake');
+        document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+        document.getElementById('flood-ov').style.height = '0%';
+        document.getElementById('route').style.display = 'none';
+        document.getElementById('hazard-pt').setAttribute('r', '0');
+        document.getElementById('stat-text').innerText = "ALL SECURE";
+        document.getElementById('stat-text').style.color = "var(--glow-green)";
+        document.getElementById('loc-text').innerText = "SECTOR-7 (IDLE)";
+        document.getElementById('instruction-list').innerHTML = '<div class="step-item">1. System Monitoring.</div>';
+        window.speechSynthesis.cancel();
+    }
+
+    function randomizeAll() {
+        resetSys();
+        
+        // Randomize Location and Disaster
+        const loc = locations[Math.floor(Math.random() * locations.length)];
+        const dis = disasters[Math.floor(Math.random() * disasters.length)];
+
+        // Update UI
+        document.getElementById('stat-text').innerText = "⚠️ " + dis.name;
+        document.getElementById('stat-text').style.color = dis.color;
+        document.getElementById('loc-text').innerText = loc.name;
+        document.getElementById('route').style.display = 'block';
+
+        // Move Hazard Marker
+        const marker = document.getElementById('hazard-pt');
+        marker.setAttribute('cx', loc.x);
+        marker.setAttribute('cy', loc.y);
+        marker.setAttribute('r', '40');
+
+        // Update Instructions
+        let html = "";
+        dis.steps.forEach(s => { html += `<div class="step-item" style="color:${dis.color}">${s}</div>`; });
+        document.getElementById('instruction-list').innerHTML = html;
+
+        // Visual Overlays
+        if(dis.name === "FIRE") document.getElementById('fire-ov').style.display = 'block';
+        if(dis.name === "EARTHQUAKE" || dis.name === "TSUNAMI") document.getElementById('vp').classList.add('shake');
+        if(dis.name === "FLOOD" || dis.name === "TSUNAMI") document.getElementById('flood-ov').style.height = '65%';
+        if(dis.name === "GAS LEAK") document.getElementById('gas-ov').style.display = 'block';
+
+        // Voice Command
+        const voiceMsg = `Warning. ${dis.name} detected at ${loc.name}. ${dis.advice}`;
+        const speech = new SpeechSynthesisUtterance(voiceMsg);
+        window.speechSynthesis.speak(speech);
+
+        document.getElementById('sys-log').innerHTML = `HAZARD: ${dis.name}<br>LOC: ${loc.name.toUpperCase()}<br>STATUS: CRITICAL`;
+    }
+
+    function triggerSOS() {
+        alert("🚨 SOS SIGNAL SENT!\nGPS coordinates and User profile shared with Rescue Teams.");
+        document.getElementById('stat-text').innerText = "SOS SENT";
+        document.getElementById('stat-text').style.color = "#fff";
+        const speech = new SpeechSynthesisUtterance("Emergency SOS Sent. Rescue teams have been notified of your location.");
+        window.speechSynthesis.speak(speech);
+    }
+</script>
+
+</body>
+</html>
